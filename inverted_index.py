@@ -1,5 +1,6 @@
 import nltk
 import json
+import os
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 
@@ -84,6 +85,7 @@ def join_block(json_data):
     for data in json_data:
         if len(data[1]) > 0:
             ans_dict.append(data)
+        ans_dict.sort(key=lambda x: x[0])
     return ans_dict
 
 
@@ -96,9 +98,18 @@ def blocked_sort_based_index(file_index, nro_buffers):
     while line[0]:
         json_data = []
         for i in range(nro_buffers):
-            json_data.append(json.loads(line[i][:-1]))
-        temp_write.write(json.dumps(join_block(json_data)) + '\n')
-
+            if len(line[i][:-1]) > 0:
+                json_data.append(json.loads(line[i][:-1]))
+        data_join = join_block(json_data)
+        for join in data_join:
+            if len(join) > 0:
+                temp_write.write(json.dumps(join) + '\n')
+        for i in range(nro_buffers):
+            line[i] = file_read.readline()
+    file_read.close()
+    temp_write.close()
+    os.remove(file_index)
+    os.rename('./' + file_index + '.tmp', file_index)
     pass
 
 
