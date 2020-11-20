@@ -11,8 +11,8 @@ nltk.download('punkt')
 nltk.download('stopwords')
 
 
-def cosine(q, doc):
-    return np.sum(np.cos(q, doc))
+def score(q, doc):
+    return np.dot(q, doc)
 
 
 def get_nro_words_by_id(id_text):
@@ -293,7 +293,17 @@ class InvertedIndex:
         words_to = made_word(data_index, keys_data)
         query = make_score(query_words)
         for i in range(len(words_to)):
-            sim = cosine(np.array(query) * 10, np.array(words_to[i]) * 10)
+            sim = score(np.array(query) * 10, np.array(words_to[i]) * 10)
             result.append((keys_data[i], sim))  # [ (doc1, sc1), (doc, sc2) ]
-        result.sort(key=lambda x:x[1])
+        result.sort(key=lambda x: x[1], reverse=True)
         return result[0:k]
+
+    def get_json_by_ids(self, list_ids):
+        jsons = []
+        for book in self.texts:
+            with open(book, encoding='utf-8') as f:
+                words = json.load(f)
+                for json_data in words:
+                    if str(json_data['id']) in list_ids:
+                        jsons.append((json_data['id'], json_data['text']))
+        return jsons
